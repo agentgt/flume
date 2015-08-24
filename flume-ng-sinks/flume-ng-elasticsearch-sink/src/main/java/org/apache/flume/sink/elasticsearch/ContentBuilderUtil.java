@@ -22,7 +22,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import org.elasticsearch.common.jackson.core.JsonParseException;
+import org.elasticsearch.common.jackson.core.JsonProcessingException;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
@@ -57,17 +57,16 @@ public class ContentBuilderUtil {
       XContentType contentType, byte[] data) throws IOException {
     XContentParser parser =
       XContentFactory.xContent(contentType).createParser(data);
-    parser.nextToken();
-    // Add the field name, but not the value.
-    builder.field(fieldName);
     try {
+      parser.nextToken();
+      // Add the field name, but not the value.
+      builder.field(fieldName);
       // This will add the whole parsed content as the value of the field.
       builder.copyCurrentStructure(parser);
-    } catch (JsonParseException ex) {
+    } catch (JsonProcessingException ex) {
       // If we get an exception here the most likely cause is nested JSON that
       // can't be figured out in the body. At this point just push it through
       // as is, we have already added the field so don't do it again
-      builder.endObject();
       builder.field(fieldName, new String(data, charset));
     } finally {
       if (parser != null) {
