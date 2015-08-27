@@ -84,7 +84,8 @@ public class ElasticSearchLogStashEventSerializer implements
   private void appendBody(XContentBuilder builder, Event event)
       throws IOException, UnsupportedEncodingException {
     byte[] body = event.getBody();
-    ContentBuilderUtil.appendField(builder, "@message", body);
+    //Its better to assume the body is always text FLUME-2768
+    ContentBuilderUtil.addSimpleField(builder, "@message", body);
   }
 
   private void appendHeaders(XContentBuilder builder, Event event)
